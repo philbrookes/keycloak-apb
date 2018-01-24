@@ -28,6 +28,14 @@ plans:
       default: admin
       type: string
       title: Keycloak admin password
+    - name: SHARED_SERVICE
+      required: False
+      type: bool
+      title: Connecting to an existing shared service?
+    - name: SHARED_HOST
+      required: False
+      type: string
+      title: Host of existing KeyCloak service
     bind_parameters:
     - name: service
       title: The service the client is for

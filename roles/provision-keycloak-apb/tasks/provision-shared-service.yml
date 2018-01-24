@@ -1,0 +1,3 @@
+- set_fact: KEYCLOAK_HOST="{{ SHARED_HOST }}"
+
+- include_tasks: keycloak-config.yml

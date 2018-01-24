@@ -1,3 +1,8 @@
 - include_tasks: provision-postgres.yml
+  when: not SHARED_SERVICE
 
 - include_tasks: provision-keycloak.yml
+  when: not SHARED_SERVICE
+
+- include_tasks: provision-shared-service.yml
+  when: SHARED_SERVICE

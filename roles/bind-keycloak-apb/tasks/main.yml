@@ -10,12 +10,14 @@
 
 - 
   name: "Retrieve route to keycloak"
-  shell: "oc get routes keycloak -n '{{ namespace }}' | grep -v NAME | awk '{print $2}'"
+  shell: "oc get secret keycloak -o yaml -n {{ namespace }} | grep 'uri:' | awk '{print $2}' | openssl base64 -d | tr -d ' '"
   register: keycloak_route
+
+- debug: var=keycloak_route
 
 - name: "Generate keycloak auth token"
   uri:
-    url: "{{ keycloak_protocol }}://{{ keycloak_route.stdout }}/auth/realms/master/protocol/openid-connect/token"
+    url: "{{ keycloak_route.stdout }}/auth/realms/master/protocol/openid-connect/token"
     method: POST
     body: "client_id=admin-cli&username={{ _apb_provision_creds.ADMIN_NAME }}&password={{ _apb_provision_creds.ADMIN_PASSWORD }}&grant_type=password"
     validate_certs: no
@@ -27,7 +29,7 @@
 -
   name: "Create {{ service }}-bearer client in realm {{ namespace }}"
   uri:
-    url: "{{ keycloak_protocol }}://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients"
+    url: "{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients"
     method: POST
     body: "{\"id\": \"{{ service}}-bearer\", \"secret\": \"{{ generated_password.stdout }}\",\"bearerOnly\":true}"
     validate_certs: no
@@ -39,7 +41,7 @@
 -
   name: Get installation details bearer
   uri:
-    url: "{{ keycloak_protocol }}://{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients/{{ service}}-bearer/installation/providers/keycloak-oidc-keycloak-json"
+    url: "{{ keycloak_route.stdout }}/auth/admin/realms/{{ namespace }}/clients/{{ service}}-bearer/installation/providers/keycloak-oidc-keycloak-json"
     method: GET
     validate_certs: no
     headers:
@@ -54,6 +56,6 @@
       name: "keycloak-bearer"
       resource: "{{ service }}-bearer"
       bearer_installation: "{{ installation_bearer.content }}"
-      uri: "{{ keycloak_protocol }}://{{ keycloak_route.stdout }}"
+      uri: "{{ keycloak_route.stdout }}"
       client_id: "{{ generated_username.stdout }}"
       client_secret: "{{ generated_password.stdout }}"
