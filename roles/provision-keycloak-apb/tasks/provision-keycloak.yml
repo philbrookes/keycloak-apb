@@ -15,7 +15,7 @@
 
 - name: 'create keycloak k8s deployment'
   k8s_extensions_v1beta1_deployment:
-    name: 'keycloak-{{ TAG }}'
+    name: '{{ keycloak_service_name }}'
     namespace: '{{ namespace }}'
     labels:
       app: '{{ keycloak_service_name }}'
